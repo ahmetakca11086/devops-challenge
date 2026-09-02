@@ -1,17 +1,17 @@
-# BUILD
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# copy everything
+
 COPY . .
 
-# restore FULL solution (important)
-RUN dotnet restore HelloTeam.slnx
 
-# publish API only
+RUN dotnet restore HelloTeam.sln
+
+
 RUN dotnet publish src/HelloTeam.Api/HelloTeam.Api.csproj -c Release -o /app/publish
 
-# RUNTIME
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 WORKDIR /app
 

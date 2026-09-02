@@ -26,13 +26,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        run: dotnet restore HelloTeam.slnx
+        run: dotnet restore HelloTeam.sln
 
       - name: Build
-        run: dotnet build HelloTeam.slnx --configuration Release --no-restore
+        run: dotnet build HelloTeam.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test HelloTeam.slnx --configuration Release --no-build
+        run: dotnet test HelloTeam.sln --configuration Release --no-build
 
       - name: Login to GHCR
         if: github.ref == 'refs/heads/main'
