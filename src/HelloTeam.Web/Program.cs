@@ -11,8 +11,16 @@ app.MapGet("/", async () =>
 {
     try
     {
-    var json = await httpClient.GetFromJsonAsync<dynamic>("http://webapi:11130/api/hello");
-return Results.Content($"<h1>{json.message}</h1>", "text/html");
+        var response = await httpClient.GetFromJsonAsync<HelloResponse>(
+            "http://webapi:11130/api/hello"
+        );
+
+        if (response == null || string.IsNullOrEmpty(response.Message))
+        {
+            return Results.Content("<h1>Empty response</h1>", "text/html");
+        }
+
+        return Results.Content($"<h1>{response.Message}</h1>", "text/html");
     }
     catch
     {
