@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using HelloTeam.Web.Models;
 
 namespace HelloTeam.Web.Services;
 
@@ -15,7 +14,13 @@ public class HelloApiClient
     public async Task<HelloResponse?> GetHelloAsync()
     {
         return await _httpClient.GetFromJsonAsync<HelloResponse>(
-            "/api/hello");
+            "http://webapi:11130/api/hello"
+        );
     }
 }
 
+// 👇 MUST be public (this fixes your error)
+public class HelloResponse
+{
+    public string Message { get; set; } = string.Empty;
+}
