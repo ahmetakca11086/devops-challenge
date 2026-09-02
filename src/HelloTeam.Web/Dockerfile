@@ -1,36 +1,17 @@
-# ============================================
-# Build stage
-# ============================================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-
 WORKDIR /src
 
-COPY HelloTeam.Web.csproj .
-RUN dotnet restore
-
 COPY . .
+RUN dotnet restore src/HelloTeam.Web/HelloTeam.Web.csproj
+RUN dotnet publish src/HelloTeam.Web/HelloTeam.Web.csproj -c Release -o /app/publish
 
-RUN dotnet publish \
-    -c Release \
-    -o /app/publish \
-    --no-restore \
-    --no-self-contained
-
-
-# ============================================
-# Runtime stage
-# ============================================
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
-
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 WORKDIR /app
-
-# Non-root user
-RUN adduser --disabled-password --uid 1001 appuser
-
-EXPOSE 52369
 
 COPY --from=build /app/publish .
 
-USER appuser
+ENV ASPNETCORE_URLS=http://0.0.0.0:52369
+
+EXPOSE 52369
 
 ENTRYPOINT ["dotnet", "HelloTeam.Web.dll"]

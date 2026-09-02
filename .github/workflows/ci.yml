@@ -25,7 +25,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore HelloTeam.slnx
 
       - name: Build
@@ -35,34 +35,36 @@ jobs:
         run: dotnet test HelloTeam.slnx --configuration Release --no-build
 
       - name: Login to GHCR
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
+      - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
       
-      - name: Build and Push API
+      - name: Build & Push API
         uses: docker/build-push-action@v5
         with:
-          context: ./src/HelloTeam.Api
+          context: .
+          file: ./src/HelloTeam.Api/Dockerfile
           no-cache: true
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/hello-team-api:latest
             ghcr.io/${{ github.repository_owner }}/hello-team-api:${{ github.sha }}
 
       
-      - name: Build and Push WebApp
+      - name: Build & Push Web
         uses: docker/build-push-action@v5
         with:
-          context: ./src/HelloTeam.Web
+          context: .
+          file: ./src/HelloTeam.Web/Dockerfile
           no-cache: true
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/hello-team-web:latest
             ghcr.io/${{ github.repository_owner }}/hello-team-web:${{ github.sha }}

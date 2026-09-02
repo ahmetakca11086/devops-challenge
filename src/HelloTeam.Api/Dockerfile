@@ -1,37 +1,17 @@
-# ============================================
-# Build stage
-# ============================================
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY HelloTeam.Api.csproj .
-
-RUN dotnet restore
-
 COPY . .
+RUN dotnet restore src/HelloTeam.Api/HelloTeam.Api.csproj
+RUN dotnet publish src/HelloTeam.Api/HelloTeam.Api.csproj -c Release -o /app/publish
 
-RUN dotnet publish \
-    -c Release \
-    -o /app/publish \
-    --no-restore \
-    --no-self-contained
-
-
-# ============================================
-# Runtime stage
-# ============================================
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
-
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 WORKDIR /app
+
+COPY --from=build /app/publish .
 
 ENV ASPNETCORE_HTTP_PORTS=11130
 
 EXPOSE 11130
-
-COPY --from=build /app/publish .
-
-# Run the application as a non-root user.
-USER $APP_UID
 
 ENTRYPOINT ["dotnet", "HelloTeam.Api.dll"]
