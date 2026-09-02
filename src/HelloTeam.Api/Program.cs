@@ -29,4 +29,3 @@ app.MapGet("/health/ready", () =>
 app.Run();
 
 public partial class Program { }
-// trigger rebuild
