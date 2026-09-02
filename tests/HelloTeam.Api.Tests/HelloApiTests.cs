@@ -23,7 +23,7 @@ public class HelloApiTests : IClassFixture<WebApplicationFactory<Program>>
         var body = await response.Content.ReadFromJsonAsync<HelloResponse>();
 
         Assert.NotNull(body);
-        Assert.Equal("Hello Ziraat Team from aakca", body!.Message);;
+        Assert.Equal("Hello Ziraat Team from aakca", body!.Message);
     }
 
     [Fact]
