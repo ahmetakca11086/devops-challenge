@@ -1,6 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// REQUIRED PORT
 builder.WebHost.UseUrls("http://0.0.0.0:52369");
 
 var app = builder.Build();
@@ -11,16 +10,14 @@ app.MapGet("/", async () =>
 {
     try
     {
-        var response = await httpClient.GetFromJsonAsync<HelloResponse>(
+        var json = await httpClient.GetFromJsonAsync<HelloResponse>(
             "http://webapi:11130/api/hello"
         );
 
-        if (response == null || string.IsNullOrEmpty(response.Message))
-        {
-            return Results.Content("<h1>Empty response</h1>", "text/html");
-        }
+        if (json == null)
+            return Results.Content("<h1>No response</h1>", "text/html");
 
-        return Results.Content($"<h1>{response.Message}</h1>", "text/html");
+        return Results.Content($"<h1>{json.Message}</h1>", "text/html");
     }
     catch
     {
@@ -29,3 +26,8 @@ app.MapGet("/", async () =>
 });
 
 app.Run();
+
+class HelloResponse
+{
+    public string Message { get; set; } = string.Empty;
+}
