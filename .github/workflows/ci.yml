@@ -42,29 +42,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # ✅ API IMAGE
       - name: Build & Push API
         uses: docker/build-push-action@v5
         with:
-        context: .
-        file: ./src/HelloTeam.Api/Dockerfile
-        platforms: linux/amd64,linux/arm64
-        no-cache: true
-        push: true
-        tags: |
-        ghcr.io/${{ github.repository_owner }}/hello-team-api:latest
-        ghcr.io/${{ github.repository_owner }}/hello-team-api:${{ github.sha }}
+          context: .
+          file: ./src/HelloTeam.Api/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          no-cache: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/hello-team-api:latest
+            ghcr.io/${{ github.repository_owner }}/hello-team-api:${{ github.sha }}
 
-
+      # ✅ WEB IMAGE
       - name: Build & Push Web
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./src/HelloTeam.Web/Dockerfile
-          no-cache: true
+          platforms: linux/amd64,linux/arm64
           push: true
+          no-cache: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/hello-team-web:latest
             ghcr.io/${{ github.repository_owner }}/hello-team-web:${{ github.sha }}
