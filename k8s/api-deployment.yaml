@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-team-api
+  labels:
+    app: hello-team-api
+spec:
+  replicas: 2
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: hello-team-api
+
+  template:
+    metadata:
+      labels:
+        app: hello-team-api
+
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/ahmetakca11086/hello-team-api:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 11130
+
+          env:
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "11130"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 11130
+            initialDelaySeconds: 3
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 11130
+            initialDelaySeconds: 10
+            periodSeconds: 10

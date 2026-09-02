@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapi
+
+spec:
+  selector:
+    app: hello-team-api
+
+  ports:
+    - name: http
+      port: 11130
+      targetPort: 11130
+
+  type: ClusterIP
