@@ -1,23 +1,26 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /app
 
 
-COPY . .
+COPY HelloTeam.sln ./
+COPY src/HelloTeam.Api/HelloTeam.Api.csproj src/HelloTeam.Api/
+COPY src/HelloTeam.Web/HelloTeam.Web.csproj src/HelloTeam.Web/
+COPY tests/HelloTeam.Api.Tests/HelloTeam.Api.Tests.csproj tests/HelloTeam.Api.Tests/
 
 
 RUN dotnet restore HelloTeam.sln
 
 
-RUN dotnet publish src/HelloTeam.Api/HelloTeam.Api.csproj -c Release -o /app/publish
+COPY . .
 
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+RUN dotnet publish src/HelloTeam.Api/HelloTeam.Api.csproj -c Release -o /out
+
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+COPY --from=build /out .
 
-COPY --from=build /app/publish .
-
-ENV ASPNETCORE_HTTP_PORTS=11130
 EXPOSE 11130
-
 ENTRYPOINT ["dotnet", "HelloTeam.Api.dll"]

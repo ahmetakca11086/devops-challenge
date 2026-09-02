@@ -49,8 +49,8 @@ jobs:
       - name: Build & Push API
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./src/HelloTeam.Api/Dockerfile
+        context: .
+        file: ./src/HelloTeam.Api/Dockerfile
           no-cache: true
           push: true
           tags: |
