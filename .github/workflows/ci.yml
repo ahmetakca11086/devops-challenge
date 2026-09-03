@@ -1,8 +1,12 @@
-name: CI-CD
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -19,42 +23,45 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - run: dotnet restore HelloTeam.sln
-      - run: dotnet build HelloTeam.sln --configuration Release --no-restore
-      - run: dotnet test HelloTeam.sln --configuration Release --no-build
+      - name: Restore
+        run: dotnet restore HelloTeam.sln
+
+      - name: Build
+        run: dotnet build HelloTeam.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test HelloTeam.sln --configuration Release --no-build
 
       - name: Login to GHCR
+        if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Setup Buildx
+        if: github.ref == 'refs/heads/main'
+        uses: docker/setup-buildx-action@v3
 
       - name: Build & Push API
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./src/HelloTeam.Api/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/hello-team-api:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/hello-team-api:latest
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-
-      - name: Deploy
-        run: |
-          kubectl apply -f k8s/
-          kubectl rollout restart deployment hello-team-api
-          kubectl rollout restart deployment webapp
+      - name: Build & Push Web
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./src/HelloTeam.Web/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/hello-team-web:latest
