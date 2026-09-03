@@ -1,5 +1,4 @@
 name: CI
-
 on:
 push:
 branches:
@@ -7,26 +6,29 @@ branches:
 pull_request:
 branches:
 - main
-
 permissions:
 contents: read
 packages: write
-
 jobs:
 build:
 runs-on: ubuntu-latest
-
-```
 steps:
-  - uses: actions/checkout@v4
+  - name: Checkout
+    uses: actions/checkout@v4
 
-  - uses: actions/setup-dotnet@v4
+  - name: Setup .NET
+    uses: actions/setup-dotnet@v4
     with:
       dotnet-version: 8.0.x
 
-  - run: dotnet restore HelloTeam.sln
-  - run: dotnet build HelloTeam.sln --configuration Release --no-restore
-  - run: dotnet test HelloTeam.sln --configuration Release --no-build
+  - name: Restore
+    run: dotnet restore HelloTeam.sln
+
+  - name: Build
+    run: dotnet build HelloTeam.sln --configuration Release --no-restore
+
+  - name: Test
+    run: dotnet test HelloTeam.sln --configuration Release --no-build
 
   - name: Login to GHCR
     if: github.ref == 'refs/heads/main'
@@ -63,4 +65,3 @@ steps:
       tags: |
         ghcr.io/${{ github.repository_owner }}/hello-team-web:latest
         ghcr.io/${{ github.repository_owner }}/hello-team-web:${{ github.sha }}
-```
