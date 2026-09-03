@@ -4,12 +4,10 @@ metadata:
   name: webapi
 
 spec:
+  type: ClusterIP
   selector:
     app: hello-team-api
 
   ports:
-    - name: http
-      port: 11130
+    - port: 11130
       targetPort: 11130
-
-  type: ClusterIP

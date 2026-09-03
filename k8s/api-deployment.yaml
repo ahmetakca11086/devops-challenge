@@ -4,8 +4,10 @@ metadata:
   name: hello-team-api
   labels:
     app: hello-team-api
+
 spec:
   replicas: 2
+  revisionHistoryLimit: 1
 
   strategy:
     type: RollingUpdate
