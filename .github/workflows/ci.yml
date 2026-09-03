@@ -46,7 +46,7 @@ steps:
   - name: Set up Docker Buildx
     uses: docker/setup-buildx-action@v3
 
-  - name: Build & Push API
+  - name: Build and Push API
     uses: docker/build-push-action@v5
     with:
       context: .
