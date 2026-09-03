@@ -6,7 +6,7 @@ app.MapGet("/api/hello", () =>
 {
     return Results.Ok(new
     {
-        message = "Hello Ziraat Team from aakca"
+        message = "Hello Ziraat Team From aakca"
     });
 });
 
