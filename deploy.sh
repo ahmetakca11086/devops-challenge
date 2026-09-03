@@ -2,17 +2,11 @@
 
 set -e
 
-echo "🚀 Deploying to Kubernetes..."
+SHA=$(git rev-parse HEAD)
 
-echo "📦 Applying manifests..."
-kubectl apply -f k8s/
+echo "Deploying image: $SHA"
 
-echo "🔄 Restarting deployments..."
-kubectl rollout restart deployment hello-team-api
-kubectl rollout restart deployment webapp
+kubectl set image deployment/hello-team-api \
+api=ghcr.io/ahmetakca11086/hello-team-api:$SHA
 
-echo "⏳ Waiting for rollout..."
-kubectl rollout status deployment hello-team-api
-kubectl rollout status deployment webapp
-
-echo "Deployment complete!"
+kubectl rollout status deployment/hello-team-api
