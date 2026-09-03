@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: ghcr.io/ahmetakca11086/hello-team-api:latest
+          image: ghcr.io/ahmetakca11086/hello-team-api:placeholder
           imagePullPolicy: Always
 
           ports:

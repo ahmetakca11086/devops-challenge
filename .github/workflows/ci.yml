@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -12,61 +12,97 @@ permissions:
   contents: read
   packages: write
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_API: ghcr.io/${{ github.repository_owner }}/hello-team-api
+  IMAGE_WEB: ghcr.io/${{ github.repository_owner }}/hello-team-web
+
 jobs:
   build-test-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      
+      - name: Checkout
         uses: actions/checkout@v4
 
+      
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: 8.0.x
 
+      
       - name: Restore
         run: dotnet restore HelloTeam.sln
 
+      
       - name: Build
         run: dotnet build HelloTeam.sln --configuration Release --no-restore
 
+      
       - name: Test
         run: dotnet test HelloTeam.sln --configuration Release --no-build
 
+      
       - name: Login to GHCR
         if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Docker Buildx
+      
+      - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ✅ API IMAGE
+      
       - name: Build & Push API
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./src/HelloTeam.Api/Dockerfile
-          platforms: linux/amd64,linux/arm64
           push: true
-          no-cache: true
+          platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/hello-team-api:latest
-            ghcr.io/${{ github.repository_owner }}/hello-team-api:${{ github.sha }}
+            ${{ env.IMAGE_API }}:${{ github.sha }}
+            ${{ env.IMAGE_API }}:latest
 
-      # ✅ WEB IMAGE
+    
       - name: Build & Push Web
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./src/HelloTeam.Web/Dockerfile
-          platforms: linux/amd64,linux/arm64
           push: true
-          no-cache: true
+          platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/hello-team-web:latest
-            ghcr.io/${{ github.repository_owner }}/hello-team-web:${{ github.sha }}
+            ${{ env.IMAGE_WEB }}:${{ github.sha }}
+            ${{ env.IMAGE_WEB }}:latest
+
+      - name: Set kubeconfig
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      
+      - name: Deploy API
+        if: github.ref == 'refs/heads/main'
+        run: |
+          kubectl set image deployment/hello-team-api \
+            api=${{ env.IMAGE_API }}:${{ github.sha }}
+
+          kubectl rollout status deployment/hello-team-api
+
+      
+      - name: Deploy Web
+        if: github.ref == 'refs/heads/main'
+        run: |
+          kubectl set image deployment/webapp \
+            web=${{ env.IMAGE_WEB }}:${{ github.sha }}
+
+          kubectl rollout status deployment/webapp
